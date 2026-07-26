@@ -12,6 +12,53 @@
         <p class="text-surface-400 mt-1">Fill in the details below.</p>
     </div>
 
+    {{-- YouTube Music Import Section --}}
+    @if(!$isEditing)
+    <div class="card space-y-4 border border-primary-500/20">
+        <div class="flex items-center gap-2 border-b border-surface-800 pb-2">
+            <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21.582 6.186a2.506 2.506 0 00-1.768-1.768C18.254 4 12 4 12 4s-6.254 0-7.814.418c-.832.208-1.486.862-1.694 1.694C2.074 7.746 2.074 12 2.074 12s0 4.254.418 5.814c.208.832.862 1.486 1.694 1.694C5.746 20 12 20 12 20s6.254 0 7.814-.418a2.506 2.506 0 001.768-1.768C22 16.254 22 12 22 12s0-4.254-.418-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            <h2 class="text-lg font-semibold text-white flex-1">Import from YouTube Music</h2>
+        </div>
+
+        <div class="flex gap-3">
+            <input type="text" wire:model="ytmQuery" wire:keydown.enter="searchYtm" class="input flex-1" placeholder="Search YouTube Music...">
+            <button type="button" wire:click="searchYtm" wire:loading.attr="disabled" class="btn-primary btn-sm whitespace-nowrap">
+                <span wire:loading.remove wire:target="searchYtm">Search</span>
+                <span wire:loading wire:target="searchYtm">Searching...</span>
+            </button>
+        </div>
+        @error('ytmQuery') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
+
+        @if($ytmError)
+            <p class="text-red-400 text-sm">{{ $ytmError }}</p>
+        @endif
+
+        @if(!empty($ytmResults))
+            <div class="space-y-3 max-h-80 overflow-y-auto">
+                @foreach($ytmResults as $result)
+                    <div class="flex items-center gap-3 bg-surface-800/50 p-4 rounded-xl border border-surface-800 hover:border-surface-700 transition-colors">
+                        <div class="w-12 h-12 rounded-lg bg-surface-700 flex-shrink-0 overflow-hidden">
+                            @if(!empty($result['thumbnails']))
+                                <img src="{{ $result['thumbnails'][0]['url'] ?? '' }}" alt="" class="w-full h-full object-cover">
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-medium truncate">{{ $result['title'] }}</p>
+                            <p class="text-surface-400 text-sm truncate">{{ implode(', ', $result['artists']) }}</p>
+                        </div>
+                        @if($result['duration_seconds'])
+                            <span class="text-surface-400 text-sm">{{ gmdate('i:s', $result['duration_seconds']) }}</span>
+                        @endif
+                        <button type="button" wire:click="importFromYtm({{ $loop->index }})" class="btn-ghost btn-sm text-primary-400 hover:text-primary-300 whitespace-nowrap">
+                            Import
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+    @endif
+
     <form wire:submit="save" class="space-y-6">
         <div class="card space-y-6">
             {{-- Basic Info --}}
@@ -96,6 +143,24 @@
                 <input type="checkbox" wire:model="is_favorite" class="w-5 h-5 rounded bg-surface-800 border-surface-600 text-primary-500 focus:ring-primary-500/20">
                 <span class="text-white font-medium">Mark as Favorite</span>
             </label>
+        </div>
+
+        {{-- Audio Upload --}}
+        <div class="card space-y-4">
+            <h2 class="text-lg font-semibold text-white border-b border-surface-800 pb-2">Rehearsal Audio</h2>
+            <div>
+                <label class="label">Upload Audio File</label>
+                <input type="file" wire:model="audioFile" accept="audio/*" class="input file:bg-surface-700 file:text-white file:border-0 file:rounded-lg file:px-4 file:py-2 file:mr-3 file:cursor-pointer">
+                <p class="text-xs text-surface-500 mt-1">MP3, WAV, OGG, FLAC, AAC, M4A (max 100MB)</p>
+                @error('audioFile') <span class="text-red-400 text-sm mt-1 block">{{ $message }}</span> @enderror
+                <div wire:loading wire:target="audioFile" class="text-primary-400 text-sm mt-1">Uploading...</div>
+            </div>
+            @if($song && $song->audio_path)
+                <div class="flex items-center gap-2 text-sm text-surface-400">
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                    Existing audio file: {{ basename($song->audio_path) }}
+                </div>
+            @endif
         </div>
 
         {{-- Tags --}}

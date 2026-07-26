@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'youtube_music' => [
+        'python_path' => env('YTMUSIC_PYTHON_PATH', 'python3'),
+        'oauth_path' => env('YTMUSIC_OAUTH_PATH'),
+        'audio_storage' => env('YTMUSIC_AUDIO_STORAGE', 'songs/audio'),
+    ],
+
 ];

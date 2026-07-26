@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Setlists;
 
+use App\Enums\LinkType;
 use App\Enums\SetlistType;
 use App\Models\Setlist;
 use App\Models\Song;
+use App\Services\YouTubeMusicService;
 use Livewire\Component;
 
 class SetlistForm extends Component
@@ -20,10 +22,23 @@ class SetlistForm extends Component
     public string $venue = '';
     
     // Setlist Songs State
-    public array $setlistSongs = []; // Array of ['id', 'title', 'artist', 'duration', 'notes']
+    public array $setlistSongs = [];
     
     // Search State
     public string $searchQuery = '';
+    public bool $ytmSearching = false;
+    public array $ytmResults = [];
+    public ?string $ytmError = null;
+
+    public function updatedSearchQuery()
+    {
+        $this->ytmResults = [];
+        $this->ytmError = null;
+
+        if (strlen($this->searchQuery) >= 2) {
+            $this->searchYtm();
+        }
+    }
     
     public array $types = [];
 
@@ -65,9 +80,32 @@ class SetlistForm extends Component
         }
     }
 
+    public function searchYtm()
+    {
+        if (strlen($this->searchQuery) < 2) return;
+
+        $this->ytmSearching = true;
+        $this->ytmError = null;
+        $this->ytmResults = [];
+
+        try {
+            $service = app(YouTubeMusicService::class);
+            $result = $service->search($this->searchQuery);
+
+            if (isset($result['error'])) {
+                $this->ytmError = $result['error'];
+            } else {
+                $this->ytmResults = array_slice($result['results'] ?? [], 0, 5);
+            }
+        } catch (\Exception $e) {
+            $this->ytmError = $e->getMessage();
+        }
+
+        $this->ytmSearching = false;
+    }
+
     public function addSong($songId)
     {
-        // Don't add if already in setlist
         if (collect($this->setlistSongs)->contains('id', $songId)) {
             $this->dispatch('toast', message: 'Song is already in the setlist.', type: 'error');
             return;
@@ -86,6 +124,62 @@ class SetlistForm extends Component
         ];
         
         $this->searchQuery = '';
+        $this->ytmResults = [];
+    }
+
+    public function addSongFromYtm(int $index)
+    {
+        $data = $this->ytmResults[$index] ?? null;
+        if (!$data) return;
+
+        $title = $data['title'];
+        $artist = implode(', ', $data['artists']);
+        $duration = $data['duration_seconds'];
+        $videoId = $data['videoId'];
+
+        // Check if song already exists in library
+        $existing = Song::where('title', $title)
+            ->where('artist', $artist)
+            ->first();
+
+        if ($existing) {
+            $song = $existing;
+        } else {
+            // Create new song in library
+            $song = Song::create([
+                'title' => $title,
+                'artist' => $artist ?: null,
+                'duration' => $duration ?: null,
+                'created_by' => auth()->id(),
+            ]);
+
+            // Add YouTube Music link
+            if ($videoId) {
+                $song->links()->create([
+                    'type' => LinkType::YouTube,
+                    'url' => "https://music.youtube.com/watch?v={$videoId}",
+                    'label' => 'YouTube Music',
+                ]);
+            }
+        }
+
+        // Add to setlist
+        if (collect($this->setlistSongs)->contains('id', $song->id)) {
+            $this->dispatch('toast', message: 'Song is already in the setlist.', type: 'error');
+            return;
+        }
+
+        $this->setlistSongs[] = [
+            'id' => $song->id,
+            'title' => $song->title,
+            'artist' => $song->artist,
+            'duration' => $song->formatted_duration,
+            'duration_seconds' => $song->duration ?? 0,
+            'notes' => '',
+        ];
+
+        $this->searchQuery = '';
+        $this->ytmResults = [];
     }
 
     public function removeSong($index)
@@ -133,7 +227,6 @@ class SetlistForm extends Component
     {
         $validatedData = $this->validate();
         
-        // Convert empty strings to null
         foreach (['description', 'scheduled_at', 'venue'] as $field) {
             if (empty($validatedData[$field])) {
                 $validatedData[$field] = null;
@@ -147,7 +240,6 @@ class SetlistForm extends Component
             $this->setlist = Setlist::create($validatedData);
         }
 
-        // Sync songs with order and notes
         $syncData = [];
         foreach ($this->setlistSongs as $index => $song) {
             $syncData[$song['id']] = [
@@ -163,7 +255,7 @@ class SetlistForm extends Component
 
     public function render()
     {
-        $searchResults = [];
+        $searchResults = collect();
         if (strlen($this->searchQuery) >= 2) {
             $searchResults = Song::search($this->searchQuery)
                 ->limit(5)

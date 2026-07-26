@@ -6,11 +6,16 @@ use App\Enums\Difficulty;
 use App\Enums\LinkType;
 use App\Models\Song;
 use App\Models\Tag;
+use App\Services\YouTubeMusicService;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class SongForm extends Component
 {
+    use WithFileUploads;
+
     public ?Song $song = null;
     public bool $isEditing = false;
 
@@ -35,6 +40,15 @@ class SongForm extends Component
     public array $allTags = [];
     public array $difficulties = [];
     public array $linkTypes = [];
+
+    // YouTube Music search
+    public string $ytmQuery = '';
+    public array $ytmResults = [];
+    public bool $ytmSearching = false;
+    public ?string $ytmError = null;
+
+    // Audio upload
+    public $audioFile = null;
 
     public function mount(?Song $song = null)
     {
@@ -99,6 +113,81 @@ class SongForm extends Component
         $this->links = array_values($this->links);
     }
 
+    public function searchYtm()
+    {
+        $this->validate(['ytmQuery' => 'required|string|min:2|max:200']);
+        $this->ytmSearching = true;
+        $this->ytmError = null;
+        $this->ytmResults = [];
+
+        try {
+            $service = app(YouTubeMusicService::class);
+            $result = $service->search($this->ytmQuery);
+
+            if (isset($result['error'])) {
+                $this->ytmError = $result['error'];
+            } else {
+                $this->ytmResults = $result['results'] ?? [];
+            }
+        } catch (\Exception $e) {
+            $this->ytmError = $e->getMessage();
+        }
+
+        $this->ytmSearching = false;
+    }
+
+    public function importFromYtm(int $index)
+    {
+        $songData = $this->ytmResults[$index] ?? null;
+        if (!$songData) {
+            return;
+        }
+
+        $this->title = $songData['title'];
+        $this->artist = implode(', ', $songData['artists']);
+        $this->duration = $songData['duration_seconds'];
+
+        $videoId = $songData['videoId'];
+        if ($videoId) {
+            $ytUrl = "https://music.youtube.com/watch?v={$videoId}";
+            
+            $existingIndex = null;
+            foreach ($this->links as $i => $link) {
+                if (!empty($link['url']) && str_contains($link['url'], $videoId)) {
+                    $existingIndex = $i;
+                    break;
+                }
+            }
+
+            if ($existingIndex === null) {
+                $emptyIndex = null;
+                foreach ($this->links as $i => $link) {
+                    if (empty($link['url'])) {
+                        $emptyIndex = $i;
+                        break;
+                    }
+                }
+
+                if ($emptyIndex !== null) {
+                    $this->links[$emptyIndex]['type'] = LinkType::YouTube->value;
+                    $this->links[$emptyIndex]['url'] = $ytUrl;
+                    $this->links[$emptyIndex]['label'] = 'YouTube Music';
+                } else {
+                    $this->links[] = [
+                        'id' => null,
+                        'type' => LinkType::YouTube->value,
+                        'url' => $ytUrl,
+                        'label' => 'YouTube Music',
+                    ];
+                }
+            }
+        }
+
+        $this->ytmResults = [];
+        $this->ytmQuery = '';
+        $this->dispatch('ytm-imported');
+    }
+
     protected function rules()
     {
         return [
@@ -119,6 +208,7 @@ class SongForm extends Component
             'links.*.type' => ['required_with:links.*.url', Rule::enum(LinkType::class)],
             'links.*.url' => ['nullable', 'url', 'max:2048'],
             'links.*.label' => ['nullable', 'string', 'max:255'],
+            'audioFile' => ['nullable', 'file', 'mimes:mp3,wav,ogg,flac,aac,m4a', 'max:102400'],
         ];
     }
 
@@ -127,7 +217,7 @@ class SongForm extends Component
         $validatedData = $this->validate();
 
         $songData = collect($validatedData)
-            ->except(['selectedTags', 'links'])
+            ->except(['selectedTags', 'links', 'audioFile'])
             ->toArray();
             
         // Convert empty strings to null for nullable db fields
@@ -142,6 +232,12 @@ class SongForm extends Component
         } else {
             $songData['created_by'] = auth()->id();
             $this->song = Song::create($songData);
+        }
+
+        // Handle audio file upload
+        if ($this->audioFile) {
+            $path = $this->audioFile->store('songs/audio', 'public');
+            $this->song->update(['audio_path' => $path]);
         }
 
         // Sync tags
