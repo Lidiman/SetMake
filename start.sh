@@ -5,11 +5,10 @@ source /app/.venv/bin/activate
 
 echo "=== Setting up Laravel ==="
 php artisan key:generate --force
-php artisan config:cache
 
 echo "=== Waiting for database ==="
 for i in {1..30}; do
-    php artisan migrate --force --no-interaction 2>/dev/null && break
+    php artisan migrate --force --no-interaction && break
     echo "  DB not ready, retrying in 2s... ($i/30)"
     sleep 2
 done
