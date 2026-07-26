@@ -23,7 +23,6 @@ RUN python3 -m venv /app/.venv && \
     pip install -r /app/python/requirements.txt --quiet
 
 RUN composer install --optimize-autoloader --no-interaction && \
-    php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache
 
