@@ -1,9 +1,5 @@
 [build]
-builder = "nixpacks"
-
-[build.variables]
-NIXPACKS_PHP_VERSION = "8.4"
+builder = "Dockerfile"
 
 [deploy]
-startCommand = "bash start.sh"
 healthcheckPath = "/"
