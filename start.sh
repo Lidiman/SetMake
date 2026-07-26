@@ -3,7 +3,34 @@
 echo "=== Activating Python venv ==="
 source /app/.venv/bin/activate
 
-echo "=== Setting up Laravel ==="
+echo "=== Creating .env file ==="
+cat > /app/.env <<'ENVEOF'
+APP_NAME=BandSet
+APP_ENV=production
+APP_KEY=base64:rWn7AjR0MbokquITYsGMZSeEdqiYTcsi4WJoCYiojPo=
+APP_DEBUG=false
+APP_URL=https://setmake-production.up.railway.app
+LOG_CHANNEL=stack
+LOG_LEVEL=info
+
+DB_CONNECTION=mysql
+DB_HOST=mysql.railway.internal
+DB_PORT=3306
+DB_DATABASE=railway
+DB_USERNAME=root
+DB_PASSWORD=EMiJAFEPEuIBeaCQncQdfovKmSPthMFJ
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+CACHE_STORE=database
+BROADCAST_DRIVER=log
+QUEUE_CONNECTION=database
+
+PYTHON_BIN=/app/.venv/bin/python3
+ENVEOF
+
+echo "=== Running key:generate ==="
 php artisan key:generate --force
 
 echo "=== Waiting for database ==="
