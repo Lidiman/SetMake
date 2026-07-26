@@ -2,6 +2,8 @@ FROM php:8.4-fpm
 
 WORKDIR /app
 
+# Force fresh build 2026-07-26 v2
+
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
