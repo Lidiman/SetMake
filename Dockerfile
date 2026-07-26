@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-venv \
     python3-pip \
-    nginx \
     && docker-php-ext-install zip pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -28,11 +27,9 @@ RUN composer install --optimize-autoloader --no-interaction && \
     php artisan route:cache && \
     php artisan view:cache
 
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-
 RUN chmod -R 775 /app/storage /app/bootstrap/cache && \
     chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-EXPOSE 80
+EXPOSE 8000
 
 CMD ["bash", "start.sh"]
