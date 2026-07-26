@@ -2,9 +2,10 @@ FROM php:8.4-fpm
 
 WORKDIR /app
 
-# Force fresh build 2026-07-26 v2
+# Force fresh build 2026-07-26 v3
 
-RUN apt-get update && apt-get install -y \
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     git \
@@ -12,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-venv \
     python3-pip \
+    nodejs \
     && docker-php-ext-install zip pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -27,6 +29,8 @@ RUN python3 -m venv /app/.venv && \
 RUN composer install --optimize-autoloader --no-interaction && \
     php artisan route:cache && \
     php artisan view:cache
+
+RUN npm ci && npm run build
 
 RUN chmod -R 775 /app/storage /app/bootstrap/cache && \
     chown -R www-data:www-data /app/storage /app/bootstrap/cache
