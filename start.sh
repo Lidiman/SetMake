@@ -4,12 +4,7 @@ echo "=== Activating Python venv ==="
 source /app/.venv/bin/activate
 
 echo "=== Setting up Laravel ==="
-if [ ! -f .env ]; then
-    echo "  Creating .env file from .env.example..."
-    cp .env.example .env 2>/dev/null || true
-fi
-echo "  Generating app key..."
-php artisan key:generate --force 2>&1 || echo "  key:generate had an issue (non-critical)"
+php artisan key:generate --force
 
 echo "=== Waiting for database ==="
 for i in {1..30}; do
