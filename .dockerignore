@@ -1,0 +1,8 @@
+node_modules
+vendor
+.git
+.env
+.storage
+storage/app/public/songs
+python/.venv
+.gitignore

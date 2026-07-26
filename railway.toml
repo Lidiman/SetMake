@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+
+[build.variables]
+NIXPACKS_PHP_VERSION = "8.4"
+
+[deploy]
+startCommand = "bash start.sh"
+healthcheckPath = "/"
