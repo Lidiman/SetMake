@@ -30,8 +30,8 @@ QUEUE_CONNECTION=database
 PYTHON_BIN=/app/.venv/bin/python3
 ENVEOF
 
-echo "=== Running key:generate ==="
-php artisan key:generate --force
+echo "=== Generating app key (if missing) ==="
+php artisan key:generate --force 2>/dev/null || true
 
 echo "=== Waiting for database ==="
 for i in {1..30}; do
