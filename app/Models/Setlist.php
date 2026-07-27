@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SetlistType;
+use App\Enums\SongReadiness;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,8 +31,6 @@ class Setlist extends Model
         ];
     }
 
-    // Relationships
-
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -40,7 +39,7 @@ class Setlist extends Model
     public function songs(): BelongsToMany
     {
         return $this->belongsToMany(Song::class, 'setlist_song')
-            ->withPivot('position', 'notes')
+            ->withPivot('position', 'notes', 'readiness')
             ->withTimestamps()
             ->orderByPivot('position');
     }
@@ -59,8 +58,6 @@ class Setlist extends Model
     {
         return $this->hasMany(Rehearsal::class);
     }
-
-    // Accessors
 
     public function getTotalDurationAttribute(): int
     {
@@ -86,7 +83,44 @@ class Setlist extends Model
         return $this->songs->count();
     }
 
-    // Scopes
+    public function getAverageBpmAttribute(): ?int
+    {
+        $songsWithBpm = $this->songs->filter(fn($s) => $s->bpm);
+        if ($songsWithBpm->isEmpty()) {
+            return null;
+        }
+        return (int) round($songsWithBpm->avg('bpm'));
+    }
+
+    public function getReadinessCountsAttribute(): array
+    {
+        $ready = 0;
+        $needsPractice = 0;
+        $notReady = 0;
+
+        foreach ($this->songs as $song) {
+            $readiness = $song->pivot->readiness ?? 'needs_practice';
+            switch ($readiness) {
+                case 'ready':
+                    $ready++;
+                    break;
+                case 'not_ready':
+                    $notReady++;
+                    break;
+                default:
+                    $needsPractice++;
+                    break;
+            }
+        }
+
+        return [
+            'ready' => $ready,
+            'needs_practice' => $needsPractice,
+            'not_ready' => $notReady,
+            'total' => $this->song_count,
+            'percentage' => $this->song_count > 0 ? round(($ready / $this->song_count) * 100) : 0,
+        ];
+    }
 
     public function scopeUpcoming($query)
     {

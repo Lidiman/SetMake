@@ -24,6 +24,8 @@ class Song extends Model
         'tuning',
         'capo',
         'notes',
+        'cover_image',
+        'description',
         'is_favorite',
         'audio_path',
         'created_by',
@@ -39,8 +41,6 @@ class Song extends Model
             'difficulty' => Difficulty::class,
         ];
     }
-
-    // Relationships
 
     public function creator(): BelongsTo
     {
@@ -60,7 +60,7 @@ class Song extends Model
     public function setlists(): BelongsToMany
     {
         return $this->belongsToMany(Setlist::class, 'setlist_song')
-            ->withPivot('position', 'notes')
+            ->withPivot('position', 'notes', 'readiness')
             ->withTimestamps()
             ->orderByPivot('position');
     }
@@ -80,7 +80,10 @@ class Song extends Model
         return $this->hasMany(SongChecklist::class);
     }
 
-    // Accessors
+    public function requests(): HasMany
+    {
+        return $this->hasMany(SongRequest::class);
+    }
 
     public function getFormattedDurationAttribute(): string
     {
@@ -99,7 +102,15 @@ class Song extends Model
         return $this->performances()->count();
     }
 
-    // Scopes
+    public function getChecklistCompletionAttribute(): int
+    {
+        $total = $this->checklists()->count();
+        if ($total === 0) {
+            return 0;
+        }
+        $completed = $this->checklists()->where('is_completed', true)->count();
+        return (int) round(($completed / $total) * 100);
+    }
 
     public function scopeSearch($query, ?string $search)
     {
@@ -121,5 +132,19 @@ class Song extends Model
     public function scopeFavorites($query)
     {
         return $query->where('is_favorite', true);
+    }
+
+    public function scopeNeedsPractice($query)
+    {
+        return $query->whereHas('checklists', function ($q) {
+            $q->where('is_completed', false);
+        })->orWhereDoesntHave('checklists');
+    }
+
+    public function scopePlayedRecently($query, int $days = 30)
+    {
+        return $query->whereHas('performances', function ($q) use ($days) {
+            $q->where('performed_at', '>=', now()->subDays($days));
+        });
     }
 }

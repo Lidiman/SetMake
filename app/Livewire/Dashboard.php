@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Gig;
 use App\Models\Performance;
+use App\Models\Rehearsal;
 use App\Models\Setlist;
 use App\Models\Song;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -13,30 +16,23 @@ class Dashboard extends Component
     {
         $totalSongs = Song::count();
         $favoriteSongs = Song::where('is_favorite', true)->count();
+        $totalGigs = Gig::count();
+        $totalPerformances = Performance::count();
 
-        $upcomingRehearsal = Setlist::with('songs')
-            ->where('type', 'rehearsal')
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at')
-            ->first();
+        $upcomingRehearsals = Rehearsal::with(['setlist', 'members'])
+            ->upcoming()
+            ->limit(5)
+            ->get();
 
-        $upcomingGig = Setlist::with('songs')
-            ->where('type', 'performance')
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at')
-            ->first();
+        $upcomingGigs = Gig::with(['setlist', 'members'])
+            ->upcoming()
+            ->limit(5)
+            ->get();
 
         $recentPerformances = Performance::with('song')
             ->orderByDesc('performed_at')
             ->limit(8)
             ->get();
-
-        $totalRehearsalMinutes = Setlist::where('type', 'rehearsal')
-            ->where('scheduled_at', '>=', now()->startOfMonth())
-            ->where('scheduled_at', '<=', now()->endOfMonth())
-            ->withSum('songs', 'duration')
-            ->get()
-            ->sum('songs_sum_duration');
 
         $mostPlayedSongs = Song::withCount('performances')
             ->has('performances')
@@ -49,18 +45,66 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
-        $totalPerformances = Performance::count();
+        $songsNeedingPractice = Song::whereHas('checklists', function ($q) {
+            $q->where('is_completed', false);
+        })->orWhereDoesntHave('checklists')->count();
+
+        $readySongs = Song::whereDoesntHave('checklists', function ($q) {
+            $q->where('is_completed', false);
+        })->count();
+
+        $recentSongs = Song::latest()->limit(5)->get();
+
+        $weeklyRehearsals = Rehearsal::thisWeek()->get();
+
+        $monthlyIncome = Gig::completed()
+            ->whereYear('date', now()->year)
+            ->whereMonth('date', now()->month)
+            ->selectRaw('coalesce(sum(payment + tips - transport - parking - food - equipment_rental - other_expenses), 0) as net_income')
+            ->value('net_income');
+
+        $incomeByMonth = Gig::completed()
+            ->selectRaw("strftime('%Y-%m', date) as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->limit(6)
+            ->get();
+
+        $rehearsalActivities = Rehearsal::with('creator')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $recentSetlists = Setlist::withCount('songs')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $audienceFavorites = \App\Models\SongRequest::selectRaw('song_name, sum(quantity) as total')
+            ->groupBy('song_name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
 
         return view('livewire.dashboard', [
             'totalSongs' => $totalSongs,
             'favoriteSongs' => $favoriteSongs,
-            'upcomingRehearsal' => $upcomingRehearsal,
-            'upcomingGig' => $upcomingGig,
+            'totalGigs' => $totalGigs,
+            'totalPerformances' => $totalPerformances,
+            'upcomingRehearsals' => $upcomingRehearsals,
+            'upcomingGigs' => $upcomingGigs,
             'recentPerformances' => $recentPerformances,
-            'totalRehearsalMinutes' => intval($totalRehearsalMinutes / 60),
             'mostPlayedSongs' => $mostPlayedSongs,
             'favoriteSongsList' => $favoriteSongsList,
-            'totalPerformances' => $totalPerformances,
+            'songsNeedingPractice' => $songsNeedingPractice,
+            'readySongs' => $readySongs,
+            'recentSongs' => $recentSongs,
+            'weeklyRehearsals' => $weeklyRehearsals,
+            'monthlyIncome' => $monthlyIncome,
+            'incomeByMonth' => $incomeByMonth,
+            'rehearsalActivities' => $rehearsalActivities,
+            'recentSetlists' => $recentSetlists,
+            'audienceFavorites' => $audienceFavorites,
         ])->layout('components.layouts.app')->title('Dashboard');
     }
 }

@@ -13,15 +13,17 @@ class Performance extends Model
     protected $fillable = [
         'song_id',
         'setlist_id',
+        'gig_id',
         'performed_at',
         'venue',
+        'status',
         'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'performed_at' => 'date',
+            'performed_at' => 'datetime',
         ];
     }
 
@@ -33,5 +35,25 @@ class Performance extends Model
     public function setlist(): BelongsTo
     {
         return $this->belongsTo(Setlist::class);
+    }
+
+    public function gig(): BelongsTo
+    {
+        return $this->belongsTo(Gig::class);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopeSkipped($query)
+    {
+        return $query->where('status', 'skipped');
+    }
+
+    public function scopeEncore($query)
+    {
+        return $query->where('status', 'encore');
     }
 }

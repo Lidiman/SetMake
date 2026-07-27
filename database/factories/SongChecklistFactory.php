@@ -2,23 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\SongChecklist;
+use App\Models\Song;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<SongChecklist>
- */
 class SongChecklistFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'song_id' => Song::factory(),
+            'task' => fake()->randomElement(['Intro', 'Solo', 'Verse', 'Chorus', 'Bridge', 'Outro', 'Vocal Harmony', 'Drum Fill', 'Bass Line', 'Guitar Riff']),
+            'is_completed' => fake()->boolean(50),
         ];
     }
 }

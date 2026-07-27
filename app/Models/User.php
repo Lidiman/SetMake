@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,7 +30,6 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
@@ -43,6 +43,16 @@ class User extends Authenticatable
     public function isMember(): bool
     {
         return $this->role === UserRole::Member;
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === UserRole::Viewer;
+    }
+
+    public function canManage(): bool
+    {
+        return $this->isAdmin() || $this->isMember();
     }
 
     public function songs(): HasMany
@@ -63,5 +73,20 @@ class User extends Authenticatable
     public function rehearsals(): BelongsToMany
     {
         return $this->belongsToMany(Rehearsal::class, 'rehearsal_user')->withPivot('status')->withTimestamps();
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications(): HasMany
+    {
+        return $this->notifications()->where('is_read', false);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(SongAttachment::class, 'uploaded_by');
     }
 }

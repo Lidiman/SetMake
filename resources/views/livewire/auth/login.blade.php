@@ -61,9 +61,13 @@
                 </button>
             </form>
 
-            <div class="mt-6 pt-5 border-t border-surface-800/50">
+            <div class="mt-6 pt-5 border-t border-surface-800/50 space-y-2">
                 <p class="text-xs text-surface-500 text-center">
-                    Demo: <span class="text-surface-400">Admin</span> / <span class="text-surface-400">BAMAGROUND1b</span>
+                    Demo: <span class="text-surface-400">admin</span> / <span class="text-surface-400">password</span>
+                </p>
+                <p class="text-sm text-surface-400 text-center">
+                    No account?
+                    <a href="{{ route('register') }}" class="text-primary-400 hover:text-primary-300 font-medium" wire:navigate>Create one</a>
                 </p>
             </div>
         </div>

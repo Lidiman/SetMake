@@ -11,9 +11,12 @@ class SongShow extends Component
 
     public function mount(Song $song)
     {
-        $this->song = $song->load(['tags', 'links', 'creator', 'performances.setlist' => function ($q) {
-            $q->orderByDesc('scheduled_at');
-        }]);
+        $this->song = $song->load([
+            'tags', 'links', 'creator',
+            'performances.setlist' => fn($q) => $q->orderByDesc('scheduled_at'),
+            'attachments.uploader',
+            'checklists',
+        ]);
     }
 
     public function delete()
@@ -22,7 +25,7 @@ class SongShow extends Component
         $this->song->delete();
         $this->redirect(route('songs.index'), navigate: true);
     }
-    
+
     public function toggleFavorite()
     {
         $this->song->update(['is_favorite' => !$this->song->is_favorite]);

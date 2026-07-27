@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BandSet - Rehearsal & Setlist Management for bands">
+    <meta name="description" content="BandFlow - Band Management Platform">
 
-    <title>{{ $title ?? 'BandSet' }} — BandSet</title>
+    <title>{{ $title ?? 'Dashboard' }} — BandFlow</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="min-h-screen" x-data="{ sidebarOpen: false }">
+<body class="min-h-screen" x-data="{ sidebarOpen: false, searchOpen: false }" @keydown.cmd-k.window="searchOpen = true" @keydown.ctrl-k.window="searchOpen = true">
     @auth
     <div class="flex min-h-screen">
         {{-- Mobile sidebar overlay --}}
@@ -42,7 +42,7 @@
                         <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                     </svg>
                 </div>
-                <span class="text-xl font-bold text-white tracking-tight">Band<span class="text-primary-400">Set</span></span>
+                <span class="text-xl font-bold text-white tracking-tight">Band<span class="text-primary-400">Flow</span></span>
             </div>
 
             {{-- Navigation --}}
@@ -64,9 +64,24 @@
                     Setlists
                 </a>
 
+                <a href="{{ route('rehearsals.index') }}" class="sidebar-link {{ request()->routeIs('rehearsals.*') ? 'active' : '' }}" wire:navigate>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Rehearsals
+                </a>
+
+                <a href="{{ route('gigs.index') }}" class="sidebar-link {{ request()->routeIs('gigs.*') ? 'active' : '' }}" wire:navigate>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Gigs
+                </a>
+
                 <a href="{{ route('performances.index') }}" class="sidebar-link {{ request()->routeIs('performances.*') ? 'active' : '' }}" wire:navigate>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     History
+                </a>
+
+                <a href="{{ route('analytics') }}" class="sidebar-link {{ request()->routeIs('analytics') ? 'active' : '' }}" wire:navigate>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    Analytics
                 </a>
             </nav>
 
@@ -91,19 +106,24 @@
         </aside>
 
         {{-- Main content --}}
-        <main class="flex-1 min-w-0">
-            {{-- Mobile header --}}
-            <header class="lg:hidden sticky top-0 z-30 bg-surface-950/80 backdrop-blur-xl border-b border-surface-800/50 px-4 py-3">
-                <div class="flex items-center justify-between">
-                    <button @click="sidebarOpen = true" class="text-surface-400 hover:text-surface-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
-                    <span class="text-lg font-bold text-white">Band<span class="text-primary-400">Set</span></span>
-                    <div class="w-6"></div>
+        <main class="flex-1 min-w-0 flex flex-col">
+            {{-- Top header bar --}}
+            <header class="sticky top-0 z-30 bg-surface-950/80 backdrop-blur-xl border-b border-surface-800/50">
+                <div class="flex items-center justify-between px-4 py-3 lg:px-8">
+                    <div class="flex items-center gap-4">
+                        <button @click="sidebarOpen = true" class="lg:hidden text-surface-400 hover:text-surface-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        </button>
+                        <span class="text-lg font-bold text-white lg:hidden">Band<span class="text-primary-400">Flow</span></span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        @livewire('search.global-search')
+                        @livewire('notifications.notification-dropdown')
+                    </div>
                 </div>
             </header>
 
-            <div class="p-4 lg:p-8">
+            <div class="p-4 lg:p-8 flex-1">
                 {{ $slot }}
             </div>
         </main>
