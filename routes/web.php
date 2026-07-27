@@ -62,4 +62,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Analytics
     Route::get('/analytics', \App\Livewire\Analytics\AnalyticsDashboard::class)->name('analytics');
+
+    // Settings
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/profile', \App\Livewire\Settings\Profile::class)->name('profile');
+    });
 });

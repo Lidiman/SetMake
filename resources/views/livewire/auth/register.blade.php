@@ -6,7 +6,7 @@
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                 </svg>
             </div>
-            <h1 class="text-3xl font-bold text-white tracking-tight">Band<span class="text-primary-400">Flow</span></h1>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Band<span class="text-primary-400">Buddy</span></h1>
             <p class="text-surface-400 mt-2">Create your band account</p>
         </div>
 

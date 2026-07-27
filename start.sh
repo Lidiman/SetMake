@@ -5,11 +5,11 @@ source /app/.venv/bin/activate
 
 echo "=== Creating .env file ==="
 cat > /app/.env <<'ENVEOF'
-APP_NAME=BandSet
+APP_NAME=BandBuddy
 APP_ENV=production
 APP_KEY=base64:rWn7AjR0MbokquITYsGMZSeEdqiYTcsi4WJoCYiojPo=
 APP_DEBUG=false
-APP_URL=https://setmake-production.up.railway.app
+APP_URL=https://bandbuddy-production.up.railway.app
 LOG_CHANNEL=stack
 LOG_LEVEL=info
 

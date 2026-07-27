@@ -16,7 +16,7 @@
 </head>
 <body class="min-h-screen" x-data="{ sidebarOpen: false, searchOpen: false }" @keydown.cmd-k.window="searchOpen = true" @keydown.ctrl-k.window="searchOpen = true">
     @auth
-    <div class="flex min-h-screen">
+    <div class="min-h-screen">
         {{-- Mobile sidebar overlay --}}
         <div
             x-show="sidebarOpen"
@@ -32,8 +32,8 @@
 
         {{-- Sidebar --}}
         <aside
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-surface-900/95 backdrop-blur-xl border-r border-surface-800/50 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto flex flex-col"
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-surface-900/95 backdrop-blur-xl border-r border-surface-800/50 transform transition-transform duration-300 flex flex-col"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
         >
             {{-- Logo --}}
             <div class="flex items-center gap-3 px-6 py-5 border-b border-surface-800/50">
@@ -106,7 +106,7 @@
         </aside>
 
         {{-- Main content --}}
-        <main class="flex-1 min-w-0 flex flex-col">
+        <main id="main-scroll" class="flex flex-col min-h-screen" style="padding-left: 0;" x-init="$el.style.paddingLeft = window.innerWidth >= 1024 ? '16rem' : '0'">
             {{-- Top header bar --}}
             <header class="sticky top-0 z-30 bg-surface-950/80 backdrop-blur-xl border-b border-surface-800/50">
                 <div class="flex items-center justify-between px-4 py-3 lg:px-8">
@@ -134,5 +134,27 @@
 
     @livewireScripts
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+    <script>
+        let lenis;
+        function initLenis() {
+            if (lenis) { lenis.destroy(); lenis = null; }
+            lenis = new Lenis({
+                smoothWheel: true,
+                lerp: 0.08,
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                touchMultiplier: 2,
+                infinite: false,
+            });
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+        }
+        document.addEventListener('DOMContentLoaded', initLenis);
+        document.addEventListener('livewire:navigated', initLenis);
+    </script>
 </body>
 </html>
