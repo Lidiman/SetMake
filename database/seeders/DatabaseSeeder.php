@@ -21,14 +21,14 @@ class DatabaseSeeder extends Seeder
         // Create admin and member users
         $admin = User::factory()->create([
             'name' => 'Admin',
-            'email' => 'admin@bandset.com',
-            'password' => bcrypt('password'),
+            'username' => 'Admin',
+            'password' => bcrypt('BAMAGROUND1b'),
             'role' => UserRole::Admin,
         ]);
 
         $member = User::factory()->create([
             'name' => 'Band Member',
-            'email' => 'member@bandset.com',
+            'username' => 'member',
             'password' => bcrypt('password'),
             'role' => UserRole::Member,
         ]);

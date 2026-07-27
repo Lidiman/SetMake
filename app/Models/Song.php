@@ -70,6 +70,16 @@ class Song extends Model
         return $this->hasMany(Performance::class);
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(SongAttachment::class);
+    }
+
+    public function checklists(): HasMany
+    {
+        return $this->hasMany(SongChecklist::class);
+    }
+
     // Accessors
 
     public function getFormattedDurationAttribute(): string

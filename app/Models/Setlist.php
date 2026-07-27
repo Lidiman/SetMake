@@ -50,6 +50,16 @@ class Setlist extends Model
         return $this->hasMany(Performance::class);
     }
 
+    public function gigs(): HasMany
+    {
+        return $this->hasMany(Gig::class);
+    }
+
+    public function rehearsals(): HasMany
+    {
+        return $this->hasMany(Rehearsal::class);
+    }
+
     // Accessors
 
     public function getTotalDurationAttribute(): int

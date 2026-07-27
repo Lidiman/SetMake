@@ -15,7 +15,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'email',
+        'username',
         'password',
         'role',
         'avatar',
@@ -29,7 +29,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
@@ -53,5 +53,15 @@ class User extends Authenticatable
     public function setlists(): HasMany
     {
         return $this->hasMany(Setlist::class, 'created_by');
+    }
+
+    public function gigs(): BelongsToMany
+    {
+        return $this->belongsToMany(Gig::class, 'gig_user')->withPivot('status')->withTimestamps();
+    }
+
+    public function rehearsals(): BelongsToMany
+    {
+        return $this->belongsToMany(Rehearsal::class, 'rehearsal_user')->withPivot('status')->withTimestamps();
     }
 }

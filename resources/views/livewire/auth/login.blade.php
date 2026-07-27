@@ -15,16 +15,16 @@
         <div class="card">
             <form wire:submit="login" class="space-y-5">
                 <div>
-                    <label for="email" class="label">Email</label>
+                    <label for="username" class="label">Username</label>
                     <input
-                        wire:model="email"
-                        type="email"
-                        id="email"
+                        wire:model="username"
+                        type="text"
+                        id="username"
                         class="input"
-                        placeholder="you@band.com"
+                        placeholder="yourusername"
                         autofocus
                     >
-                    @error('email')
+                    @error('username')
                         <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
@@ -63,7 +63,7 @@
 
             <div class="mt-6 pt-5 border-t border-surface-800/50">
                 <p class="text-xs text-surface-500 text-center">
-                    Demo: <span class="text-surface-400">admin@bandset.com</span> / <span class="text-surface-400">password</span>
+                    Demo: <span class="text-surface-400">Admin</span> / <span class="text-surface-400">BAMAGROUND1b</span>
                 </p>
             </div>
         </div>
