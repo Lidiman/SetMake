@@ -64,7 +64,7 @@ class Dashboard extends Component
             ->value('net_income');
 
         $incomeByMonth = Gig::completed()
-            ->selectRaw("strftime('%Y-%m', date) as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
+            ->selectRaw("DATE_FORMAT(date, '%Y-%m') as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
             ->groupBy('month')
             ->orderBy('month')
             ->limit(6)

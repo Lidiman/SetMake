@@ -41,13 +41,13 @@ class AnalyticsDashboard extends Component
             ->limit(10)
             ->get();
 
-        $monthlyGigs = Gig::selectRaw("strftime('%Y-%m', date) as month, count(*) as count")
+        $monthlyGigs = Gig::selectRaw("DATE_FORMAT(date, '%Y-%m') as month, count(*) as count")
             ->groupBy('month')
             ->orderBy('month')
             ->limit(12)
             ->get();
 
-        $monthlyIncome = Gig::completed()->selectRaw("strftime('%Y-%m', date) as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
+        $monthlyIncome = Gig::completed()->selectRaw("DATE_FORMAT(date, '%Y-%m') as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
             ->groupBy('month')
             ->orderBy('month')
             ->limit(12)
