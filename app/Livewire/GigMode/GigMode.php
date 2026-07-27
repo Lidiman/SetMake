@@ -2,19 +2,19 @@
 
 namespace App\Livewire\GigMode;
 
-use App\Models\Gig;
+use App\Models\Schedule;
 use App\Models\Performance;
 use Livewire\Component;
 
 class GigMode extends Component
 {
-    public Gig $gig;
+    public Schedule $gig;
     public array $songs = [];
     public int $currentIndex = 0;
     public string $startedAt = '';
     public array $completedSongs = [];
 
-    public function mount(Gig $gig)
+    public function mount(Schedule $gig)
     {
         $this->gig = $gig->load(['setlist.songs.links', 'setlist.songs.attachments']);
         $this->songs = $this->gig->setlist?->songs->toArray() ?? [];
@@ -72,9 +72,9 @@ class GigMode extends Component
         Performance::create([
             'song_id' => $currentSong['id'],
             'setlist_id' => $this->gig->setlist_id,
-            'gig_id' => $this->gig->id,
+            'schedule_id' => $this->gig->id,
             'performed_at' => now(),
-            'venue' => $this->gig->venue,
+            'venue' => $this->gig->venue ?? $this->gig->location,
             'status' => 'completed',
         ]);
 
@@ -93,9 +93,9 @@ class GigMode extends Component
         Performance::create([
             'song_id' => $currentSong['id'],
             'setlist_id' => $this->gig->setlist_id,
-            'gig_id' => $this->gig->id,
+            'schedule_id' => $this->gig->id,
             'performed_at' => now(),
-            'venue' => $this->gig->venue,
+            'venue' => $this->gig->venue ?? $this->gig->location,
             'status' => 'skipped',
         ]);
 
@@ -112,9 +112,9 @@ class GigMode extends Component
         Performance::create([
             'song_id' => $currentSong['id'],
             'setlist_id' => $this->gig->setlist_id,
-            'gig_id' => $this->gig->id,
+            'schedule_id' => $this->gig->id,
             'performed_at' => now(),
-            'venue' => $this->gig->venue,
+            'venue' => $this->gig->venue ?? $this->gig->location,
             'status' => 'encore',
         ]);
 
@@ -127,7 +127,7 @@ class GigMode extends Component
 
     public function exitGigMode()
     {
-        return redirect()->route('gigs.show', $this->gig);
+        return redirect()->route('schedules.show', $this->gig);
     }
 
     public function render()

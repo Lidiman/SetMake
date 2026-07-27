@@ -65,14 +65,9 @@ class User extends Authenticatable
         return $this->hasMany(Setlist::class, 'created_by');
     }
 
-    public function gigs(): BelongsToMany
+    public function schedules(): BelongsToMany
     {
-        return $this->belongsToMany(Gig::class, 'gig_user')->withPivot('status')->withTimestamps();
-    }
-
-    public function rehearsals(): BelongsToMany
-    {
-        return $this->belongsToMany(Rehearsal::class, 'rehearsal_user')->withPivot('status')->withTimestamps();
+        return $this->belongsToMany(Schedule::class, 'schedule_user')->withPivot('status')->withTimestamps();
     }
 
     public function notifications(): HasMany

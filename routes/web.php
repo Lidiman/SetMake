@@ -28,31 +28,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{song}/edit', \App\Livewire\Songs\SongForm::class)->name('edit');
     });
 
-    // Setlists
-    Route::prefix('setlists')->name('setlists.')->group(function () {
-        Route::get('/', \App\Livewire\Setlists\SetlistIndex::class)->name('index');
-        Route::get('/create', \App\Livewire\Setlists\SetlistForm::class)->name('create');
-        Route::get('/{setlist}', \App\Livewire\Setlists\SetlistShow::class)->name('show');
-        Route::get('/{setlist}/edit', \App\Livewire\Setlists\SetlistForm::class)->name('edit');
-    });
-
-    // Gigs
-    Route::prefix('gigs')->name('gigs.')->group(function () {
-        Route::get('/', \App\Livewire\Gigs\GigIndex::class)->name('index');
-        Route::get('/create', \App\Livewire\Gigs\GigForm::class)->name('create');
-        Route::get('/{gig}', \App\Livewire\Gigs\GigShow::class)->name('show');
-        Route::get('/{gig}/edit', \App\Livewire\Gigs\GigForm::class)->name('edit');
-    });
-
-    // Gig Mode
-    Route::get('/gigs/{gig}/mode', \App\Livewire\GigMode\GigMode::class)->name('gig-mode');
-
-    // Rehearsals
-    Route::prefix('rehearsals')->name('rehearsals.')->group(function () {
-        Route::get('/', \App\Livewire\Rehearsals\RehearsalIndex::class)->name('index');
-        Route::get('/create', \App\Livewire\Rehearsals\RehearsalForm::class)->name('create');
-        Route::get('/{rehearsal}', \App\Livewire\Rehearsals\RehearsalShow::class)->name('show');
-        Route::get('/{rehearsal}/edit', \App\Livewire\Rehearsals\RehearsalForm::class)->name('edit');
+    // Schedules
+    Route::prefix('schedules')->name('schedules.')->group(function () {
+        Route::get('/', \App\Livewire\Schedules\ScheduleIndex::class)->name('index');
+        Route::get('/create', \App\Livewire\Schedules\ScheduleForm::class)->name('create');
+        Route::get('/{schedule}', \App\Livewire\Schedules\ScheduleShow::class)->name('show');
+        Route::get('/{schedule}/edit', \App\Livewire\Schedules\ScheduleForm::class)->name('edit');
+        Route::get('/{gig}/mode', \App\Livewire\GigMode\GigMode::class)->name('gig-mode');
     });
 
     // Performances
