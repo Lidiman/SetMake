@@ -55,7 +55,7 @@
             @if($upcomingRehearsals->count() > 0)
                 <div class="space-y-3">
                     @foreach($upcomingRehearsals as $rehearsal)
-                        <a href="{{ route('rehearsals.show', $rehearsal) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-800/30 transition-colors" wire:navigate>
+                        <a href="{{ route('schedules.show', $rehearsal) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-800/30 transition-colors" wire:navigate>
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
                                     <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -82,7 +82,7 @@
             @if($upcomingGigs->count() > 0)
                 <div class="space-y-3">
                     @foreach($upcomingGigs as $gig)
-                        <a href="{{ route('gigs.show', $gig) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-800/30 transition-colors" wire:navigate>
+                        <a href="{{ route('schedules.show', $gig) }}" class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-800/30 transition-colors" wire:navigate>
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
                                     <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>

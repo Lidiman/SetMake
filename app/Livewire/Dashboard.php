@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Models\Gig;
+use App\Enums\ScheduleStatus;
 use App\Models\Performance;
-use App\Models\Rehearsal;
+use App\Models\Schedule;
 use App\Models\Setlist;
 use App\Models\Song;
 use Illuminate\Support\Facades\DB;
@@ -16,15 +16,17 @@ class Dashboard extends Component
     {
         $totalSongs = Song::count();
         $favoriteSongs = Song::where('is_favorite', true)->count();
-        $totalGigs = Gig::count();
+        $totalGigs = Schedule::gig()->count();
         $totalPerformances = Performance::count();
 
-        $upcomingRehearsals = Rehearsal::with(['setlist', 'members'])
+        $upcomingRehearsals = Schedule::rehearsal()
+            ->with(['setlist', 'members'])
             ->upcoming()
             ->limit(5)
             ->get();
 
-        $upcomingGigs = Gig::with(['setlist', 'members'])
+        $upcomingGigs = Schedule::gig()
+            ->with(['setlist', 'members'])
             ->upcoming()
             ->limit(5)
             ->get();
@@ -55,22 +57,27 @@ class Dashboard extends Component
 
         $recentSongs = Song::latest()->limit(5)->get();
 
-        $weeklyRehearsals = Rehearsal::thisWeek()->get();
+        $weeklyRehearsals = Schedule::rehearsal()
+            ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+            ->get();
 
-        $monthlyIncome = Gig::completed()
+        $monthlyIncome = Schedule::gig()
+            ->where('status', ScheduleStatus::Completed->value)
             ->whereYear('date', now()->year)
             ->whereMonth('date', now()->month)
             ->selectRaw('coalesce(sum(payment + tips - transport - parking - food - equipment_rental - other_expenses), 0) as net_income')
             ->value('net_income');
 
-        $incomeByMonth = Gig::completed()
+        $incomeByMonth = Schedule::gig()
+            ->where('status', ScheduleStatus::Completed->value)
             ->selectRaw("DATE_FORMAT(date, '%Y-%m') as month, sum(payment + tips - transport - parking - food - equipment_rental - other_expenses) as net_income")
             ->groupBy('month')
             ->orderBy('month')
             ->limit(6)
             ->get();
 
-        $rehearsalActivities = Rehearsal::with('creator')
+        $rehearsalActivities = Schedule::rehearsal()
+            ->with('creator')
             ->latest()
             ->limit(5)
             ->get();

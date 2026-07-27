@@ -49,14 +49,9 @@ class Setlist extends Model
         return $this->hasMany(Performance::class);
     }
 
-    public function gigs(): HasMany
+    public function schedules(): HasMany
     {
-        return $this->hasMany(Gig::class);
-    }
-
-    public function rehearsals(): HasMany
-    {
-        return $this->hasMany(Rehearsal::class);
+        return $this->hasMany(Schedule::class);
     }
 
     public function getTotalDurationAttribute(): int
