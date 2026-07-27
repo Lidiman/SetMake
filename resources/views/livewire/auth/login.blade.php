@@ -63,7 +63,6 @@
 
             <div class="mt-6 pt-5 border-t border-surface-800/50 space-y-2">
                 <p class="text-xs text-surface-500 text-center">
-                    Demo: <span class="text-surface-400">admin</span> / <span class="text-surface-400">password</span>
                 </p>
                 <p class="text-sm text-surface-400 text-center">
                     No account?
