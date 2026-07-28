@@ -1,6 +1,6 @@
 <div>
     {{-- Trigger button --}}
-    <button wire:click="toggle" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-800/50 border border-surface-700/50 text-surface-400 hover:text-surface-200 hover:border-surface-600 transition-all text-sm w-full max-w-xs">
+    <button wire:click="toggle" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-800/50 border border-surface-700/50 text-surface-400 hover:text-surface-200 hover:border-surface-600 transition-all text-sm w-full max-w-xl">
         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <span class="flex-1 text-left">Search...</span>
         <kbd class="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-700 text-xs text-surface-400 font-mono">⌘K</kbd>
