@@ -2,9 +2,8 @@
 
 namespace App\Livewire\Settings;
 
+use App\Services\AvatarService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -20,19 +19,19 @@ class Profile extends Component
     public string $new_password = '';
     public string $new_password_confirmation = '';
 
-    public function mount()
+    public function mount(): void
     {
         $user = Auth::user();
         $this->name = $user->name;
         $this->username = $user->username;
     }
 
-    public function updateProfile()
+    public function updateProfile(AvatarService $avatar): void
     {
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('users', 'username')->ignore(Auth::id())],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = Auth::user();
@@ -40,11 +39,7 @@ class Profile extends Component
         $user->username = $this->username;
 
         if ($this->avatar) {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            $path = $this->avatar->store('avatars', 'public');
-            $user->avatar = $path;
+            $user->avatar = $avatar->upload($this->avatar, $user->avatar);
         }
 
         $user->save();
@@ -52,7 +47,7 @@ class Profile extends Component
         $this->dispatch('toast', message: 'Profile updated successfully', type: 'success');
     }
 
-    public function updatePassword()
+    public function updatePassword(): void
     {
         $this->validate([
             'current_password' => ['required', 'current_password'],
@@ -67,11 +62,11 @@ class Profile extends Component
         $this->dispatch('toast', message: 'Password changed successfully', type: 'success');
     }
 
-    public function removeAvatar()
+    public function removeAvatar(AvatarService $avatar): void
     {
         $user = Auth::user();
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
+
+        if ($avatar->delete($user->avatar)) {
             $user->avatar = null;
             $user->save();
             $this->dispatch('toast', message: 'Avatar removed', type: 'success');

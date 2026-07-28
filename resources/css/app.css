@@ -29,6 +29,8 @@
 }
 
 @layer base {
+    [x-cloak] { display: none !important; }
+
     body {
         @apply bg-surface-950 text-surface-200 font-sans antialiased;
     }
@@ -150,10 +152,20 @@
         @apply overflow-x-auto rounded-xl border border-surface-800/50;
     }
     .sidebar-link {
-        @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 transition-all duration-200;
+        @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 transition-all duration-200 relative overflow-hidden;
+    }
+    .sidebar-link::before {
+        content: '';
+        @apply absolute inset-0 bg-primary-500/10 rounded-xl scale-x-0 origin-left transition-transform duration-300 ease-out;
+    }
+    .sidebar-link:hover::before {
+        @apply scale-x-100;
     }
     .sidebar-link.active {
         @apply text-primary-400 bg-primary-500/10 border-r-2 border-primary-500;
+    }
+    .sidebar-link.active::before {
+        @apply scale-x-100 bg-primary-500/15;
     }
     .audio-player {
         @apply bg-surface-900/80 backdrop-blur-sm border border-surface-800/50 rounded-2xl p-4 transition-all duration-300;
