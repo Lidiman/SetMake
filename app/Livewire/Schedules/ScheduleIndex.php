@@ -40,7 +40,7 @@ class ScheduleIndex extends Component
     public function delete(Schedule $schedule)
     {
         $schedule->delete();
-        $this->dispatch('toast', message: 'Schedule deleted successfully', type: 'success');
+        $this->dispatch('toast', message: 'Schedule moved to history', type: 'success');
     }
 
     public function render()
