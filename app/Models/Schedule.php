@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Schedule extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'type',
@@ -122,6 +123,13 @@ class Schedule extends Model
             $q->where('date', '<', now()->toDateString())
               ->orWhereIn('status', ['completed', 'cancelled']);
         })->orderByDesc('date');
+    }
+
+    public function scopeHistory($query)
+    {
+        return $query->withTrashed()
+            ->whereIn('status', ['completed', 'cancelled'])
+            ->orderByDesc('date');
     }
 
     public function scopeRehearsal($query)

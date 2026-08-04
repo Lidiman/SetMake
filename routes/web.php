@@ -3,6 +3,10 @@
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/up', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 Route::redirect('/', '/login');
 
 Route::middleware(['guest'])->group(function () {
@@ -32,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('schedules')->name('schedules.')->group(function () {
         Route::get('/', \App\Livewire\Schedules\ScheduleIndex::class)->name('index');
         Route::get('/create', \App\Livewire\Schedules\ScheduleForm::class)->name('create');
+        Route::get('/history', \App\Livewire\Schedules\ScheduleHistory::class)->name('history');
         Route::get('/{schedule}', \App\Livewire\Schedules\ScheduleShow::class)->name('show');
         Route::get('/{schedule}/edit', \App\Livewire\Schedules\ScheduleForm::class)->name('edit');
         Route::get('/{gig}/mode', \App\Livewire\GigMode\GigMode::class)->name('gig-mode');

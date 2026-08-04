@@ -96,6 +96,18 @@
                     Schedule
                 </a>
 
+                <a href="{{ route('schedules.history') }}" class="sidebar-link {{ request()->routeIs('schedules.history') ? 'active' : '' }}" wire:navigate
+                    x-cloak x-show="sidebarOpen"
+                    x-transition:enter="transition-all duration-300 delay-210"
+                    x-transition:enter-start="opacity-0 translate-x-2"
+                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:leave="transition-all duration-150"
+                    x-transition:leave-start="opacity-100 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Schedule History
+                </a>
+
                 <a href="{{ route('performances.index') }}" class="sidebar-link {{ request()->routeIs('performances.*') ? 'active' : '' }}" wire:navigate
                     x-cloak x-show="sidebarOpen"
                     x-transition:enter="transition-all duration-300 delay-250"

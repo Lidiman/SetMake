@@ -7,23 +7,138 @@
             </a>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="badge badge-{{ $schedule->type->color() }} flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $schedule->type->icon() }}"/></svg>
-                        {{ $schedule->type->label() }}
+                    <span class="badge badge-{{ $typeColor }} flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $typeIcon }}"/></svg>
+                        {{ $typeLabel }}
                     </span>
-                    <span class="badge badge-{{ $schedule->status->color() }}">{{ $schedule->status->label() }}</span>
+                    <span class="badge badge-{{ $statusColor }}">{{ $statusLabel }}</span>
                 </div>
                 <h1 class="text-3xl font-bold text-white">{{ $schedule->title }}</h1>
             </div>
         </div>
         
         <div class="flex gap-2">
+            @if($scheduleStatus !== \App\Enums\ScheduleStatus::Completed->value && $scheduleStatus !== \App\Enums\ScheduleStatus::Cancelled->value)
+                @if($scheduleType === \App\Enums\ScheduleType::Gig->value)
+                    <button wire:click="toggleCompleteForm"
+                        class="btn btn-secondary {{ $showCompleteForm ? 'opacity-100 bg-surface-800' : '' }}">
+                        @if($showCompleteForm)
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Cancel
+                        @else
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Mark as Done
+                        @endif
+                    </button>
+                @else
+                    <button wire:click="completeSchedule" wire:confirm="Are you sure you want to mark this rehearsal as completed?"
+                        class="btn btn-secondary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Mark as Done
+                    </button>
+                @endif
+            @endif
             <a href="{{ route('schedules.edit', $schedule) }}" class="btn-secondary" wire:navigate>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 Edit
             </a>
         </div>
     </div>
+
+    {{-- Complete Schedule Form (shows when toggling for gigs) --}}
+    @if($scheduleType === \App\Enums\ScheduleType::Gig->value && $showCompleteForm)
+        <div class="card p-6 border-emerald-500/30">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Mark as Completed
+            </h2>
+            <p class="text-sm text-surface-400 mb-4">Enter the income and expenses for this gig to mark it as done.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Income Section --}}
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider">Income</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Payment</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="payment" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Tips / Extras</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="tips" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Expenses Section --}}
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-red-400 uppercase tracking-wider">Expenses</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Transport</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="transport" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Parking</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="parking" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Food / Drink</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="food" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Equipment Rental</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="equipment_rental" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-surface-500 mb-1">Other Expenses</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                <input type="number" step="0.01" min="0" wire:model="other_expenses" class="input pl-8 py-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Net Income Preview --}}
+            <div class="mt-6 pt-4 border-t border-surface-800">
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-surface-300">Estimated Net Income</span>
+                    <span class="font-bold {{ $netIncome >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                        ${{ number_format($netIncome, 2) }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button wire:click="cancelComplete" class="btn btn-secondary">
+                    Cancel
+                </button>
+                <button wire:click="completeSchedule" wire:confirm="Are you sure you want to mark this schedule as completed?" class="btn btn-primary">
+                    Confirm & Save
+                </button>
+            </div>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 space-y-6">
@@ -143,7 +258,7 @@
             </div>
 
             {{-- Gig Details (if gig) --}}
-            @if($schedule->isGig())
+            @if($scheduleType === \App\Enums\ScheduleType::Gig->value)
                 <div class="card">
                     <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                         <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -172,73 +287,161 @@
                     </ul>
                 </div>
 
-                <div class="card bg-surface-900 border-emerald-500/20">
-                    <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Financial Summary
-                    </h3>
-                    
-                    <div class="space-y-2 text-sm mb-4 border-b border-surface-800 pb-4">
-                        <div class="flex justify-between">
-                            <span class="text-surface-400">Payment</span>
-                            <span class="text-white">${{ number_format($schedule->payment, 2) }}</span>
+                @if($showFinancialForm)
+                    <div class="card bg-surface-900 border-emerald-500/20">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Edit Financials
+                            </h3>
+                            <button wire:click="toggleFinancialForm" class="text-surface-500 hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
                         </div>
-                        @if($schedule->tips > 0)
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Payment</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="payment" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Tips / Extras</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="tips" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Transport</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="transport" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Parking</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="parking" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Food / Drink</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="food" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-surface-500 mb-1">Equipment Rental</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="equipment_rental" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs text-surface-500 mb-1">Other Expenses</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-500">$</span>
+                                        <input type="number" step="0.01" min="0" wire:model="other_expenses" class="input pl-8 py-2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-3 border-t border-surface-800">
+                                <span class="text-sm text-surface-400">Estimated Net Income</span>
+                                <span class="font-bold text-lg {{ $netIncome >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                    ${{ number_format($netIncome, 2) }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-end gap-3">
+                                <button wire:click="toggleFinancialForm" class="btn btn-secondary btn-sm">Cancel</button>
+                                <button wire:click="saveFinancials" class="btn btn-primary btn-sm">Save Financials</button>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="card bg-surface-900 border-emerald-500/20">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Financial Summary
+                            </h3>
+                            <button wire:click="toggleFinancialForm" class="btn btn-secondary btn-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                Edit
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm mb-4 border-b border-surface-800 pb-4">
                             <div class="flex justify-between">
-                                <span class="text-surface-400">Tips/Extras</span>
-                                <span class="text-white">${{ number_format($schedule->tips, 2) }}</span>
+                                <span class="text-surface-400">Payment</span>
+                                    <span class="text-white">${{ number_format($schedule->payment ?? 0, 2) }}</span>
                             </div>
-                        @endif
-                        <div class="flex justify-between pt-2 mt-2 border-t border-surface-800">
-                            <span class="text-surface-300">Gross Income</span>
-                            <span class="text-white font-medium">${{ number_format($schedule->gross_income, 2) }}</span>
+                            @if($schedule->tips && $schedule->tips > 0)
+                                <div class="flex justify-between">
+                                    <span class="text-surface-400">Tips/Extras</span>
+                                    <span class="text-white">${{ number_format($schedule->tips, 2) }}</span>
+                                </div>
+                            @endif
+                            <div class="flex justify-between pt-2 mt-2 border-t border-surface-800">
+                                <span class="text-surface-300">Gross Income</span>
+                                <span class="text-white font-medium">${{ number_format($schedule->gross_income, 2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-sm mb-4 border-b border-surface-800 pb-4">
+                            @if($schedule->transport && $schedule->transport > 0)
+                                <div class="flex justify-between text-red-400/80">
+                                    <span>Transport</span>
+                                    <span>-${{ number_format($schedule->transport, 2) }}</span>
+                                </div>
+                            @endif
+                            @if($schedule->parking && $schedule->parking > 0)
+                                <div class="flex justify-between text-red-400/80">
+                                    <span>Parking</span>
+                                    <span>-${{ number_format($schedule->parking, 2) }}</span>
+                                </div>
+                            @endif
+                            @if($schedule->food && $schedule->food > 0)
+                                <div class="flex justify-between text-red-400/80">
+                                    <span>Food/Drink</span>
+                                    <span>-${{ number_format($schedule->food, 2) }}</span>
+                                </div>
+                            @endif
+                            @if($schedule->equipment_rental && $schedule->equipment_rental > 0)
+                                <div class="flex justify-between text-red-400/80">
+                                    <span>Rental</span>
+                                    <span>-${{ number_format($schedule->equipment_rental, 2) }}</span>
+                                </div>
+                            @endif
+                            @if($schedule->other_expenses && $schedule->other_expenses > 0)
+                                <div class="flex justify-between text-red-400/80">
+                                    <span>Other</span>
+                                    <span>-${{ number_format($schedule->other_expenses, 2) }}</span>
+                                </div>
+                            @endif
+                            <div class="flex justify-between pt-2 mt-2 border-t border-surface-800 text-red-400">
+                                <span>Total Expenses</span>
+                                <span class="font-medium">${{ number_format($schedule->total_expenses, 2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-lg font-bold">
+                            <span class="text-surface-200">Net Income</span>
+                            <span class="{{ $schedule->net_income >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
+                                ${{ number_format($schedule->net_income, 2) }}
+                            </span>
                         </div>
                     </div>
-
-                    <div class="space-y-2 text-sm mb-4 border-b border-surface-800 pb-4">
-                        @if($schedule->transport > 0)
-                            <div class="flex justify-between text-red-400/80">
-                                <span>Transport</span>
-                                <span>-${{ number_format($schedule->transport, 2) }}</span>
-                            </div>
-                        @endif
-                        @if($schedule->parking > 0)
-                            <div class="flex justify-between text-red-400/80">
-                                <span>Parking</span>
-                                <span>-${{ number_format($schedule->parking, 2) }}</span>
-                            </div>
-                        @endif
-                        @if($schedule->food > 0)
-                            <div class="flex justify-between text-red-400/80">
-                                <span>Food/Drink</span>
-                                <span>-${{ number_format($schedule->food, 2) }}</span>
-                            </div>
-                        @endif
-                        @if($schedule->equipment_rental > 0)
-                            <div class="flex justify-between text-red-400/80">
-                                <span>Rental</span>
-                                <span>-${{ number_format($schedule->equipment_rental, 2) }}</span>
-                            </div>
-                        @endif
-                        @if($schedule->other_expenses > 0)
-                            <div class="flex justify-between text-red-400/80">
-                                <span>Other</span>
-                                <span>-${{ number_format($schedule->other_expenses, 2) }}</span>
-                            </div>
-                        @endif
-                        <div class="flex justify-between pt-2 mt-2 border-t border-surface-800 text-red-400">
-                            <span>Total Expenses</span>
-                            <span class="font-medium">${{ number_format($schedule->total_expenses, 2) }}</span>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center text-lg font-bold">
-                        <span class="text-surface-200">Net Income</span>
-                        <span class="{{ $schedule->net_income >= 0 ? 'text-emerald-400' : 'text-red-400' }}">
-                            ${{ number_format($schedule->net_income, 2) }}
-                        </span>
-                    </div>
-                </div>
+                @endif
             @endif
         </div>
     </div>
